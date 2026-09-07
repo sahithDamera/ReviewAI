@@ -19,7 +19,8 @@ Implemented controls include password hashing, secure owner cookies, CSRF protec
 
 ### Customer workflow
 
-1. Open `/r/<public_identifier>` or scan the QR code.
+1. Open `/r/<business-slug>` or scan the QR code. Confirm the readable slug resolves; existing random identifier links should continue resolving.
+2. Scan a newly downloaded QR code and confirm the dashboard activity records a QR open separately from a direct link visit.
 2. Choose one to five stars; there is no preselected rating.
 3. Optionally select topics and positive/negative polarity.
 4. Optionally enter a comment.

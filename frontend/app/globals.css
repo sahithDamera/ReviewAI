@@ -20,4 +20,11 @@ label > input, label > select, label > textarea { margin-top: 8px; }
 .error { background: #fff1ec; color: #8b2c20; border: 1px solid #edc6bb; padding: 14px; border-radius: 10px; font-size: 14px; }
 .success { background: #edf6ec; color: #24593f; padding: 14px; border-radius: 10px; }
 h1, h2 { letter-spacing: -.04em; line-height: 1.12; }
+/* Keep topic choices readable on narrow screens. The sentiment control is
+   rendered inside each topic control by the current flow component; make it
+   a full-width second row instead of a cramped inline dropdown. */
+[aria-labelledby="topics-title"] .flex.flex-wrap { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 12px; }
+[aria-labelledby="topics-title"] button[aria-pressed] { width: 100%; min-height: 52px; border-radius: 12px; padding: 12px 14px; text-align: left; }
+[aria-labelledby="topics-title"] button[aria-pressed] select { display: block; width: 100%; margin-top: 10px; min-height: 44px; border-radius: 8px; }
+@media (min-width: 640px) { [aria-labelledby="topics-title"] .flex.flex-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }

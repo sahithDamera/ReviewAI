@@ -1,3 +1,4 @@
+import re
 import secrets
 from uuid import uuid4
 
@@ -7,6 +8,11 @@ from sqlalchemy.exc import IntegrityError
 
 from app.repositories.business import owned_profile
 from app.services.reviews import clear_public_business_cache
+
+
+def business_slug(name: str) -> str:
+    readable = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "business"
+    return readable[:64].rstrip("-")
 
 
 async def save_business(session, owner_id, data, app_url, business_id=None):
@@ -36,18 +42,33 @@ async def save_business(session, owner_id, data, app_url, business_id=None):
             old_category = existing.category_id
         else:
             business_id = uuid4()
+            public_identifier = secrets.token_urlsafe(24)
+            base_slug = business_slug(data.name)
+            duplicate_count = await session.scalar(
+                text(
+                    "SELECT count(*) FROM reviewflow.businesses "
+                    "WHERE public_slug=:slug OR public_slug LIKE :prefix"
+                ),
+                {"slug": base_slug, "prefix": f"{base_slug}-%"},
+            )
+            public_slug = (
+                base_slug
+                if not duplicate_count
+                else f"{base_slug[:61]}-{int(duplicate_count) + 1}"
+            )
             await session.execute(
                 text(
                     "INSERT INTO reviewflow.businesses"
-                    "(id,owner_id,name,category_id,public_identifier) "
-                    "VALUES (:id,:owner,:name,:category,:public)"
+                    "(id,owner_id,name,category_id,public_identifier,public_slug) "
+                    "VALUES (:id,:owner,:name,:category,:public,:slug)"
                 ),
                 {
                     "id": business_id,
                     "owner": owner_id,
                     "name": data.name,
                     "category": data.category_id,
-                    "public": secrets.token_urlsafe(24),
+                    "public": public_identifier,
+                    "slug": public_slug,
                 },
             )
         await session.execute(
@@ -100,4 +121,5 @@ async def save_business(session, owner_id, data, app_url, business_id=None):
         raise HTTPException(409, "BUSINESS_ALREADY_EXISTS") from None
     profile = await owned_profile(session, owner_id, app_url, business_id)
     clear_public_business_cache(profile["public_identifier"])
+    clear_public_business_cache(profile["public_slug"])
     return profile

@@ -29,6 +29,10 @@ class ReviewProvider(Protocol):
 
 
 def _clean(text: str) -> str:
+    # Em/en dashes tend to make generated reviews feel synthetic. Replace them
+    # at the provider boundary so both Anthropic and the local fallback follow
+    # the same style rule.
+    text = text.replace("—", ",").replace("–", ",")
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -140,6 +144,7 @@ class LLMProvider:
             "Do not use markdown fences. "
             "Rotate structures: specific detail, service/people, then one plain sentence. "
             "Use standard sentence capitalization and end each review with punctuation. "
+            "Do not use em dashes or en dashes; use commas or periods instead. "
             "Keep the wording natural and avoid marketing copy. "
             "Never invent dishes, staff, prices, wait times, or experiences. "
             "Preserve customer intent, keep the chosen rating, and avoid defamatory, "

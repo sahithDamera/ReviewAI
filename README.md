@@ -32,7 +32,7 @@ npm run dev
 
 Open **http://localhost:3000/signup**. Backend `APP_URL` must match that origin exactly. Keep `AUTH_SECRET` stable in `backend/.env`; it was generated during Phase 3 setup. Accounts appear in `reviewflow.users` in Supabase's Table Editor, not its Authentication section. Do not overwrite the existing `.env` when following first-time setup instructions below.
 
-After creating a business, open its public review URL from the owner dashboard or scan the link. It has the form `http://localhost:3000/r/<public_identifier>` during local development.
+After creating a business, open its public review URL from the owner dashboard or scan the link. It uses a readable business slug, such as `http://localhost:3000/r/desi-district-dunwoody-a1b2c3d4`. Existing random public identifiers remain accepted for old links.
 
 ## Supabase connection
 

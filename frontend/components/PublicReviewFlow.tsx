@@ -9,7 +9,7 @@ import {
 const tokenKey = (identifier: string) => `reviewflow_session_${identifier}`;
 const draftKey = (identifier: string) => `reviewflow_draft_${identifier}`;
 
-export function PublicReviewFlow({ identifier }: { identifier: string }) {
+export function PublicReviewFlow({ identifier, entrySource = "direct" }: { identifier: string; entrySource?: "qr" | "direct" }) {
   const [business, setBusiness] = useState<PublicBusiness>();
   const [session, setSession] = useState<ReviewSession>();
   const [error, setError] = useState("");
@@ -33,14 +33,14 @@ export function PublicReviewFlow({ identifier }: { identifier: string }) {
         const profile = await api<PublicBusiness>(`/public/business/${encodeURIComponent(identifier)}`);
         const savedDraft = window.sessionStorage.getItem(draftKey(identifier));
         const draftData = savedDraft ? JSON.parse(savedDraft) : undefined;
-        const saved = window.sessionStorage.getItem(tokenKey(identifier));
+        const saved = entrySource === "qr" ? null : window.sessionStorage.getItem(tokenKey(identifier));
         let current: ReviewSession | undefined;
         if (saved) {
           try { current = await api<ReviewSession>("/public/review-session", { headers: { Authorization: `Bearer ${saved}` } }); }
           catch (err) { if (!(err instanceof ApiError) || (err.status !== 401 && err.status !== 410)) throw err; window.sessionStorage.removeItem(tokenKey(identifier)); }
         }
         if (!current) {
-          current = await api<ReviewSession>("/public/review-session", { method: "POST", body: JSON.stringify({ business_identifier: identifier, entry_source: "direct" }) });
+          current = await api<ReviewSession>("/public/review-session", { method: "POST", body: JSON.stringify({ business_identifier: identifier, entry_source: entrySource }) });
           window.sessionStorage.setItem(tokenKey(identifier), current.session_token);
           if (draftData && (draftData.rating || draftData.selected_attributes?.length || draftData.customer_comment)) {
             current = await api<ReviewSession>("/public/review-session", { method: "PATCH", headers: { Authorization: `Bearer ${current.session_token}` }, body: JSON.stringify({ input_version: current.input_version, ...draftData }) });
@@ -52,7 +52,7 @@ export function PublicReviewFlow({ identifier }: { identifier: string }) {
     }
     load();
     return () => { active = false; };
-  }, [identifier]);
+  }, [entrySource, identifier]);
 
   useEffect(() => {
     if (!session) return;

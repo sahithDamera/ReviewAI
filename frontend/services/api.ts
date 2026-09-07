@@ -49,7 +49,7 @@ export type Business = {
   public_identifier: string; review_url: string;
 };
 export type PublicBusiness = {
-  public_identifier: string; name: string; category_name: string; brand_tone: string;
+  public_identifier: string; public_slug: string; name: string; category_name: string; brand_tone: string;
   logo_url: string | null; google_review_url: string; available: boolean;
   attributes: { id: string; label: string }[];
 };

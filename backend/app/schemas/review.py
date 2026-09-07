@@ -16,6 +16,7 @@ class PublicBusinessRead(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     public_identifier: str
+    public_slug: str
     name: str
     category_name: str
     brand_tone: str
@@ -28,7 +29,9 @@ class PublicBusinessRead(BaseModel):
 class ReviewSessionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    business_identifier: str = Field(min_length=22, max_length=64)
+    business_identifier: str = Field(
+        min_length=1, max_length=64, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9-]*$"
+    )
     entry_source: Literal["qr", "direct"] = "direct"
 
 

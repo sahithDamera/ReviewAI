@@ -36,13 +36,13 @@ async def public_business(session: AsyncSession, identifier: str):
         (
             await session.execute(
                 text("""
-                SELECT b.public_identifier, b.name, c.name AS category_name,
+                SELECT b.public_identifier, b.public_slug, b.name, c.name AS category_name,
                        b.brand_tone, b.logo_url, b.status,
                        d.url AS google_review_url, d.owner_confirmed_at
                 FROM reviewflow.businesses b
                 JOIN reviewflow.business_categories c ON c.id=b.category_id
                 JOIN reviewflow.business_google_destinations d ON d.business_id=b.id
-                WHERE b.public_identifier=:identifier
+                WHERE b.public_identifier=:identifier OR b.public_slug=:identifier
             """),
                 {"identifier": identifier},
             )
@@ -60,7 +60,7 @@ async def public_business(session: AsyncSession, identifier: str):
                 FROM reviewflow.business_attributes ba
                 JOIN reviewflow.experience_attributes a ON a.id=ba.attribute_id
                 WHERE ba.business_id=(SELECT id FROM reviewflow.businesses
-                                      WHERE public_identifier=:identifier)
+                                      WHERE public_identifier=:identifier OR public_slug=:identifier)
                   AND ba.enabled ORDER BY ba.display_order, a.display_order
             """),
                 {"identifier": identifier},
@@ -71,6 +71,7 @@ async def public_business(session: AsyncSession, identifier: str):
     )
     result = {
         "public_identifier": row["public_identifier"],
+        "public_slug": row["public_slug"],
         "name": row["name"],
         "category_name": row["category_name"],
         "brand_tone": row["brand_tone"],
@@ -86,7 +87,7 @@ async def public_business(session: AsyncSession, identifier: str):
 async def create_session(session: AsyncSession, data, settings: Settings):
     business = await public_business(session, data.business_identifier)
     business_id = await session.scalar(
-        text("SELECT id FROM reviewflow.businesses WHERE public_identifier=:identifier"),
+        text("SELECT id FROM reviewflow.businesses WHERE public_identifier=:identifier OR public_slug=:identifier"),
         {"identifier": data.business_identifier},
     )
     raw_token = secrets.token_urlsafe(32)

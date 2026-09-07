@@ -20,7 +20,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import create_database_engine
 
 logger = logging.getLogger(__name__)
-SCHEMA_REVISION = "0003_funnel_columns"
+SCHEMA_REVISION = "0004_readable_business_slugs"
 
 
 def create_app(settings: Settings | None = None, engine: AsyncEngine | None = None) -> FastAPI:

@@ -43,6 +43,18 @@ def test_provider_output_validation_rejects_duplicates_and_accepts_three_items()
         _validate_provider_output({"reviews": [{"id": "1", "text": "same"}] * 3})
 
 
+def test_provider_output_removes_em_and_en_dashes():
+    value = {
+        "reviews": [
+            {"id": "1", "text": "Friendly service — quick visit."},
+            {"id": "2", "text": "A calm atmosphere – worth visiting."},
+            {"id": "3", "text": "Good food and kind staff."},
+        ]
+    }
+    output = _validate_provider_output(value)
+    assert all("—" not in item["text"] and "–" not in item["text"] for item in output)
+
+
 def test_anthropic_prompt_contains_recent_openings():
     provider = LLMProvider("test-key", "test-model")
     prompt = provider._prompt(

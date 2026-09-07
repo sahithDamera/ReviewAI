@@ -103,7 +103,8 @@ def create_business_routes(current_user):
         profile = await owned_profile(
             session, user.id, request.app.state.settings.app_url, business_id
         )
-        body, media_type, extension = review_qr(profile["review_url"], format)
+        qr_url = f"{profile['review_url']}{'&' if '?' in profile['review_url'] else '?'}source=qr"
+        body, media_type, extension = review_qr(qr_url, format)
         return Response(
             content=body,
             media_type=media_type,
