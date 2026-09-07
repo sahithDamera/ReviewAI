@@ -65,10 +65,16 @@ def test_relational_constraints_and_expiry_cleanup(migrated):
         )
         business = connection.scalar(
             text(
-                "INSERT INTO reviewflow.businesses(owner_id,name,category_id,public_identifier) "
-                "VALUES (:owner,'Test',:category,:public) RETURNING id"
+                "INSERT INTO reviewflow.businesses"
+                "(owner_id,name,category_id,public_identifier,public_slug) "
+                "VALUES (:owner,'Test',:category,:public,:slug) RETURNING id"
             ),
-            {"owner": owner, "category": category, "public": uuid4().hex},
+            {
+                "owner": owner,
+                "category": category,
+                "public": uuid4().hex,
+                "slug": f"test-{uuid4().hex[:8]}",
+            },
         )
 
         def session(rating):
