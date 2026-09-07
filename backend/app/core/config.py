@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     database_statement_timeout_ms: int = Field(default=5000, ge=100, le=60000)
     generation_enabled: bool = True
     ai_provider: Literal["anthropic", "template"] = "anthropic"
-    ai_model: str = "claude-3-5-haiku-latest"
+    ai_model: str = "claude-haiku-4-5-20251001"
     ai_api_key: SecretStr | None = None
     ai_timeout_seconds: float = Field(default=6, ge=1, le=30)
     business_daily_generation_limit: int = Field(default=300, ge=1, le=100000)

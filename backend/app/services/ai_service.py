@@ -32,6 +32,15 @@ def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _polish(text: str) -> str:
+    text = _clean(text)
+    if text:
+        text = text[0].upper() + text[1:]
+        if text[-1] not in ".!?":
+            text += "."
+    return text
+
+
 def generate_review_options(context: ReviewContext) -> list[dict[str, str]]:
     """Deterministic local provider for development and tests.
 
@@ -53,7 +62,7 @@ def generate_review_options(context: ReviewContext) -> list[dict[str, str]]:
         detail_sentence = ""
     if improvements:
         detail_sentence += f" There is room to improve {', '.join(improvements[:2])}."
-    comment = _clean(context.comment or "")
+    comment = _polish(context.comment or "")
     if comment:
         detail_sentence += f" {comment}"
     base = _clean(
@@ -97,7 +106,7 @@ def _validate_provider_output(value: object) -> list[dict[str, str]]:
     for index, item in enumerate(reviews, 1):
         if not isinstance(item, dict) or str(item.get("id")) != str(index):
             raise ValueError("invalid review id")
-        text = _clean(str(item.get("text", "")))
+        text = _polish(str(item.get("text", "")))
         if not text or len(text) > 500 or len(text.split()) > 65:
             raise ValueError("review outside bounds")
         if any(term in text.lower() for term in ("overall,", "would definitely come back")):
@@ -127,8 +136,11 @@ class LLMProvider:
             f"Customer words: {context.comment or 'none'}. Tone: {context.tone}. "
             f"Do not begin like any of these recent openings: {openings}. "
             "Option lengths should be roughly 12, 25, and 45 words. "
+            "Be concise so the complete JSON response stays below 110 output tokens. "
+            "Do not use markdown fences. "
             "Rotate structures: specific detail, service/people, then one plain sentence. "
-            "Lowercase starts, fragments, and no closing summary are allowed. "
+            "Use standard sentence capitalization and end each review with punctuation. "
+            "Keep the wording natural and avoid marketing copy. "
             "Never invent dishes, staff, prices, wait times, or experiences. "
             "Preserve customer intent, keep the chosen rating, and avoid defamatory, "
             "discriminatory, abusive, or spam-like language. "
@@ -159,6 +171,8 @@ class LLMProvider:
                         item.get("text", "") for item in content if isinstance(item, dict)
                     )
                     raw = re.sub(r"^```(?:json)?|```$", "", raw.strip()).strip()
+                    if "{" in raw and "}" in raw:
+                        raw = raw[raw.find("{") : raw.rfind("}") + 1]
                     return _validate_provider_output(json.loads(raw))
                 except Exception as exc:
                     last_error = exc

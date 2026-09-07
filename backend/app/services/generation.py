@@ -167,9 +167,10 @@ async def generate(
 async def _recent_openings(session: AsyncSession, business_id) -> list[str]:
     rows = await session.execute(
         text(
-            "SELECT final_text FROM reviewflow.review_selections "
-            "WHERE business_id=:business AND final_text IS NOT NULL "
-            "ORDER BY created_at DESC LIMIT 20"
+            "SELECT r.final_text FROM reviewflow.review_selections r "
+            "JOIN reviewflow.review_sessions s ON s.id=r.session_id "
+            "WHERE s.business_id=:business AND r.final_text IS NOT NULL "
+            "ORDER BY r.created_at DESC LIMIT 20"
         ),
         {"business": business_id},
     )

@@ -101,7 +101,7 @@ Set these only in the backend environment:
 ```env
 GENERATION_ENABLED=true
 AI_PROVIDER=anthropic
-AI_MODEL=claude-3-5-haiku-latest
+AI_MODEL=claude-haiku-4-5-20251001
 AI_API_KEY=your_key
 ```
 

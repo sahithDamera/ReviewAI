@@ -15,6 +15,7 @@ const messages: Record<string, string> = {
   CATEGORY_INVALID: "Please choose an available business category.",
   GENERATION_LIMIT_REACHED: "You have reached the suggestion limit for this session. You can write your own review.",
   GENERATION_IN_PROGRESS: "Suggestions are still being created. Please wait a moment.",
+  REVIEW_INPUT_CHANGED: "Your answers changed. Please request suggestions again.",
   RATING_REQUIRED: "Choose a rating before creating suggestions.",
   VALIDATION_ERROR: "Check your details. Use a valid email, a 12–128 character password, and a complete HTTPS destination link where requested.",
   EMAIL_VERIFICATION_REQUIRED: "Verify your email address before publishing a business.",
