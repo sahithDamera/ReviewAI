@@ -1,0 +1,14 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { OwnerHeader } from "@/components/OwnerHeader";
+import { api, ApiError, Business } from "@/services/api";
+import { AnalyticsReport, loadAnalytics } from "@/services/analytics";
+
+export default function AnalyticsPage() {
+  const router = useRouter(); const [business, setBusiness] = useState<Business>(); const [report, setReport] = useState<AnalyticsReport>(); const [error, setError] = useState("");
+  useEffect(() => { api<Business>("/businesses/me").then(value => { setBusiness(value); return loadAnalytics(value.id); }).then(setReport).catch(err => { if (err instanceof ApiError && err.status === 401) router.replace("/login"); else setError("Could not load analytics."); }); }, [router]);
+  const s = report?.summary;
+  return <><OwnerHeader /><main className="mx-auto max-w-5xl px-6 py-12"><p className="eyebrow">Analytics</p><h1 className="mt-3 text-4xl font-semibold">Your review funnel.</h1><p className="muted mt-4 max-w-2xl">{report ? `${report.start} through ${report.end} (UTC).` : "Loading your date-range report…"} Handoff clicks do not confirm a Google submission.</p>{error ? <p className="error mt-8" role="alert">{error}</p> : !report || !business ? <p className="muted mt-8" role="status">Loading analytics…</p> : <><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[["Sessions",s?.sessions],["Rated",s?.rated_sessions],["AI generated",s?.generated_sessions],["AI selected",s?.selected_sessions],["Manual writing",s?.manual_sessions],["Copied",s?.copied_sessions],["Google handoffs",s?.google_handoff_sessions],["Average rating",s?.rating_average == null ? "—" : s.rating_average.toFixed(1)]].map(([label,value]) => <section className="panel" key={String(label)}><p className="muted text-sm">{label}</p><p className="mt-3 text-3xl font-semibold">{value}</p></section>)}</div><section className="panel mt-8"><h2 className="text-2xl font-semibold">Daily activity</h2>{report.daily.length === 0 ? <p className="muted mt-6">No activity in this period yet.</p> : <div className="mt-6 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b border-[#dce3d9]"><th className="py-3 pr-4">UTC day</th><th className="py-3 pr-4">Sessions</th><th className="py-3 pr-4">Rated</th><th className="py-3 pr-4">Generated</th><th className="py-3 pr-4">Copied</th><th className="py-3">Handoffs</th></tr></thead><tbody>{report.daily.map(day => <tr className="border-b border-[#eef1eb]" key={day.day}><td className="py-3 pr-4">{day.day}</td><td className="py-3 pr-4">{day.sessions}</td><td className="py-3 pr-4">{day.rated_sessions}</td><td className="py-3 pr-4">{day.generated_sessions}</td><td className="py-3 pr-4">{day.copied_sessions}</td><td className="py-3">{day.google_handoff_sessions}</td></tr>)}</tbody></table></div>}</section></>}</main></>;
+}

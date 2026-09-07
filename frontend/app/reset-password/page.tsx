@@ -1,0 +1,6 @@
+"use client";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { api } from "@/services/api";
+function ResetForm() { const token = useSearchParams().get("token") || ""; const [password, setPassword] = useState(""); const [message, setMessage] = useState(""); async function submit(event: React.FormEvent) { event.preventDefault(); try { await api("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, password }) }); setMessage("Password reset. You can log in now."); } catch { setMessage("This reset link is invalid or expired."); } } return <section className="panel"><h1 className="text-2xl font-semibold">Reset password</h1><form className="mt-6 space-y-5" onSubmit={submit}><label>New password<input type="password" minLength={12} maxLength={128} required value={password} onChange={event => setPassword(event.target.value)} /></label><button className="button w-full">Reset password</button></form>{message && <p className="muted mt-4" role="status">{message}</p>}</section>; }
+export default function ResetPasswordPage() { return <main className="mx-auto max-w-md px-6 py-16"><Suspense fallback={<p role="status">Loading…</p>}><ResetForm /></Suspense></main>; }
